@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Independent Accountants' Report — {{ deal.target_company|default('Target Company') }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=EB+Garamond:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm 2.5cm;
+
+            @top-right {
+                content: "Confidential | " "{{ deal.target_company }}";
+                font-size: 7pt;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+
+            @bottom-center {
+                content: "Page " counter(page);
+                font-size: 8pt;
+                color: #94a3b8;
+                font-family: 'Inter', sans-serif;
+            }
+
+            @bottom-left {
+                content: "Transaction Analysis Machine (TAM)";
+                font-size: 7pt;
+                color: #94a3b8;
+                text-transform: uppercase;
+            }
+        }
+
+        :root {
+            --navy: #0f172a;
+            --slate: #475569;
+            --gold: #b45309;
+            --accent: #2563eb;
+            --border: #e2e8f0;
+            --bg-light: #f8fa Flemish;
+            --text-main: #1e293b;
+        }
+
+        body {
+            font-family: 'EB Garamond', serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: var(--text-main);
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3 {
+            font-family: 'Inter', sans-serif;
+            color: var(--navy);
+            font-weight: 700;
+            margin-top: 2.5em;
+            margin-bottom: 0.8em;
+            page-break-after: avoid;
+        }
+
+        h1 {
+            font-size: 20pt;
+            letter-spacing: -0.03em;
+            border-bottom: 1.5pt solid var(--navy);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 14pt;
+            letter-spacing: -0.02em;
+            color: var(--slate);
+            border-bottom: 0.5pt solid var(--border);
+            padding-bottom: 4px;
+        }
+
+        h3 {
+            font-size: 12pt;
+            color: var(--gold);
+            margin-top: 1.5em;
+        }
+
+        p {
+            margin-bottom: 1.2em;
+            text-align: justify;
+            orphans: 3;
+            widows: 3;
+        }
+
+        /* Cover Page */
+        .cover {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            border: 1pt solid var(--navy);
+            margin: 1cm;
+            padding: 3cm 2cm;
+            position: relative;
+        }
+
+        .cover-logo {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 12pt;
+            letter-spacing: 0.3em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 4cm;
+        }
+
+        .cover h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36pt;
+            border: none;
+            margin: 0;
+            color: var(--navy);
+            line-height: 1.1;
+            text-transform: none;
+        }
+
+        .cover .subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 12pt;
+            color: var(--slate);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 1.5em;
+            font-weight: 500;
+        }
+
+        .cover .target-box {
+            margin-top: 3cm;
+            padding: 1.5cm;
+            background: var(--bg-light);
+            border-left: 3pt solid var(--gold);
+        }
+
+        .cover .target-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 22pt;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .cover .footer-info {
+            position: absolute;
+            bottom: 2cm;
+            left: 0;
+            right: 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 10pt;
+            color: var(--slate);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2em 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 9pt;
+        }
+
+        th {
+            background-color: var(--navy);
+            color: white;
+            text-align: left;
+            padding: 12px 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1pt solid var(--border);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .num {
+            text-align: right;
+            font-family: 'Inter', sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .bold {
+            font-weight: 700;
+        }
+
+        /* Metrics */
+        .metrics-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 2em 0;
+            gap: 15px;
+        }
+
+        .metric-card {
+            flex: 1;
+            padding: 20px;
+            background: #f1f5f9;
+            border-top: 3pt solid var(--navy);
+            text-align: center;
+        }
+
+        .metric-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 8pt;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-family: 'Inter', sans-serif;
+            font-size: 18pt;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        /* Badges */
+        .badge {
+            font-family: 'Inter', sans-serif;
+            font-size: 7.5pt;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+
+        .badge-positive {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* TOC */
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 2cm;
+        }
+
+        .toc-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11pt;
+            border-bottom: 1pt dotted #cbd5e1;
+            padding-bottom: 5px;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- COVER -->
+    <div class="cover">
+        <div class="cover-logo">TAM — Transaction Analysis Machine</div>
+        <h1>Independent Accountants' Report</h1>
+        <div class="subtitle">Financial Due Diligence Services</div>
+
+        <div class="target-box">
+            <div class="subtitle" style="margin: 0 0 10px 0;">Prepared for the benefit of stakeholders of</div>
+            <div class="target-name">{{ deal.target_company|default('The Target Corporation') }}</div>
+        </div>
+
+        <div class="footer-info">
+            <div>{{ generated_date }}</div>
+            <div style="margin-top: 10px; font-weight: 600; color: #ef4444;">STRICTLY CONFIDENTIAL</div>
+        </div>
+    </div>
+    <div class="page-break"></div>
+
+    <!-- TOC -->
+    <div style="padding: 2cm 0;">
+        <h1 style="border: none; text-align: center;">Table of Contents</h1>
+        <div class="toc-list">
+            <div class="toc-item"><span>1. Scope & Engagement</span><span>3</span></div>
+            <div class="toc-item"><span>2. Procedures Performed</span><span>4</span></div>
+            <div class="toc-item"><span>3. Quality of Earnings Analysis</span><span>6</span></div>
+            <div class="toc-item"><span>4. Net Working Capital Assessment</span><span>9</span></div>
+            <div class="toc-item"><span>5. Financial Ratio Analysis</span><span>12</span></div>
+            <div class="toc-item"><span>6. Key Transaction Findings</span><span>15</span></div>
+            <div class="toc-item"><span>7. Conclusion & Recommendations</span><span>18</span></div>
+        </div>
+    </div>
+    <div class="page-break"></div>
+
+    <!-- SECTION 1 -->
+    <section>
+        <h1>1. Scope & Engagement</h1>
+        {% if narrative.scope %}
+        <p>{{ narrative.scope }}</p>
+        {% else %}
+        <p>We have been engaged to perform financial due diligence on <strong>{{ deal.target_company }}</strong> (the
+            "Company") in connection with a proposed transaction. Our objective was to analyze the historical financial
+            performance, assess the quality of earnings, and identify significant financial risks that may impact the
+            valuation or structure of the deal.</p>
+        <p>The scope of our work was focused on the identified "Key Areas of Interest" including revenue recognition,
+            cost of goods sold normalization, and recurring vs. non-recurring operational expenses.</p>
+        {% endif %}
+    </section>
+
+    <!-- SECTION 3: QoE -->
+    <section>
+        <h1>3. Quality of Earnings Analysis</h1>
+        <p>The following table summarizes our findings regarding the normalization of EBITDA for the period analyzed. We
+            have identified several adjustments related to non-recurring professional fees, one-time litigation costs,
+            and pro-forma adjustments for new contracts.</p>
+
+        <div class="metrics-container">
+            <div class="metric-card">
+                <div class="metric-label">Reported EBITDA</div>
+                <div class="metric-value">${{ "{:,.0f}".format(qoe.reported_ebitda|default(0)) }}</div>
+            </div>
+            <div class="metric-card" style="border-top-color: var(--gold);">
+                <div class="metric-label">Adjusted EBITDA</div>
+                <div class="metric-value">${{ "{:,.0f}".format(qoe.adjusted_ebitda|default(0)) }}</div>
+            </div>
+            <div class="metric-card" style="border-top-color: var(--accent);">
+                <div class="metric-label">QoE Score</div>
+                <div class="metric-value">{{ qoe.quality_score|default(0) }} <span
+                        style="font-size: 10pt; color: #64748b;">/ 100</span></div>
+            </div>
+        </div>
+
+        {% if qoe.adjustments %}
+        <h3>EBITDA Normalization Bridge</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Adjustment Description</th>
+                    <th>Category</th>
+                    <th class="num">Amount</th>
+                    <th>Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adj in qoe.adjustments %}
+                <tr>
+                    <td>{{ adj.description }}</td>
+                    <td>{{ adj.category|title }}</td>
+                    <td class="num bold">${{ "{:,.0f}".format(adj.amount|default(0)) }}</td>
+                    <td>
+                        {% if adj.impact == 'add_back' %}
+                        <span class="badge badge-positive">Add-back</span>
+                        {% else %}
+                        <span class="badge badge-danger">Deduction</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </section>
+
+    <!-- SECTION 4: NWC -->
+    <section>
+        <h1>4. Net Working Capital</h1>
+        <p>Analysis of historical working capital trends indicates a normal level of operation required to maintain the
+            current revenue trajectory. We have assessed the "PEG" (target working capital) based on a 12-month trailing
+            average.</p>
+
+        <div class="metrics-container">
+            <div class="metric-card">
+                <div class="metric-label">DSO (Days)</div>
+                <div class="metric-value">{{ working_capital.dso|default(0) }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">DIO (Days)</div>
+                <div class="metric-value">{{ working_capital.dio|default(0) }}</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">DPO (Days)</div>
+                <div class="metric-value">{{ working_capital.dpo|default(0) }}</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: RATIOS -->
+    <section>
+        <h1>5. Financial Ratios</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric Type</th>
+                    <th>Value</th>
+                    <th>Benchmark</th>
+                    <th>Assessment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if ratios.liquidity %}
+                {% for key, val in ratios.liquidity.items() %}
+                <tr>
+                    <td>{{ key.replace('_', ' ')|title }}</td>
+                    <td class="num">{{ val }}</td>
+                    <td class="num">1.2x</td>
+                    <td><span class="badge badge-positive">Optimal</span></td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECTION 6: FINDINGS -->
+    <section>
+        <h1>6. Key Transaction Findings</h1>
+        {% if ai_insights.key_findings %}
+        {% for finding in ai_insights.key_findings %}
+        <div
+            style="margin-bottom: 25px; padding: 20px; border: 0.5pt solid var(--border); background: var(--bg-light);">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h3 style="margin: 0; flex: 1; color: var(--navy);">{{ finding.finding }}</h3>
+                <span class="badge {% if finding.impact == 'high' %}badge-danger{% else %}badge-warning{% endif %}">{{
+                    finding.impact }} Risk</span>
+            </div>
+            <p style="margin-top: 10px; font-size: 10pt; color: var(--slate);">{{ finding.recommendation }}</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </section>
+
+</body>
+
+</html>

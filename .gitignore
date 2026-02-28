@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+chroma_db/
+*.db
+.env
+backend/uploads/
+backend/reports/
+frontend/node_modules/
+frontend/.next/
+backend/models/
+
+.DS_Store
+*.log
+
+backend/tam.db

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull:*)",
+      "Bash(lsof:*)",
+      "Bash(python -c \"from config import settings; print\\(f''API Key loaded: {bool\\(settings.ANTHROPIC_API_KEY\\)}''\\); print\\(f''Key starts with: {settings.ANTHROPIC_API_KEY[:20]}...'' if settings.ANTHROPIC_API_KEY else ''Key: EMPTY''\\)\")",
+      "Bash(python test_api.py:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(npm install)",
+      "Bash(python3:*)"
+    ]
+  }
+}

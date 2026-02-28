@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DCF Valuation Report — {{ deal.target_company|default('Target Company') }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+
+            @top-right {
+                content: "Valuation Analysis | " "{{ deal.target_company }}";
+                font-size: 7pt;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+
+            @bottom-center {
+                content: "Page " counter(page);
+                font-size: 8pt;
+                color: #94a3b8;
+            }
+        }
+
+        :root {
+            --navy: #0f172a;
+            --gold: #854d0e;
+            --slate: #475569;
+            --border: #e2e8f0;
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 20pt;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -0.04em;
+            margin-bottom: 25px;
+            border-left: 5pt solid var(--gold);
+            padding-left: 20px;
+        }
+
+        h2 {
+            font-size: 14pt;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: 40px;
+            margin-bottom: 15px;
+            border-bottom: 1pt solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .summary-card {
+            background: var(--bg-light);
+            padding: 15px;
+            border: 1pt solid var(--border);
+            text-align: center;
+        }
+
+        .card-label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            color: var(--slate);
+            letter-spacing: 0.1em;
+        }
+
+        .card-value {
+            font-size: 16pt;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 8.5pt;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2pt solid var(--navy);
+            background: var(--bg-light);
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1pt solid var(--border);
+        }
+
+        .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .total-row {
+            font-weight: 700;
+            background: #f1f5f9;
+            color: var(--navy);
+        }
+
+        .bridge-row td {
+            border-bottom: none;
+        }
+
+        .bridge-row.final {
+            border-top: 2pt solid var(--navy);
+            font-weight: 800;
+        }
+
+        .methodology-box {
+            background: var(--bg-light);
+            padding: 20px;
+            border: 1pt solid var(--border);
+            font-size: 9pt;
+            color: var(--slate);
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="padding: 3cm 0; text-align: center; border: 4pt solid var(--navy); margin: 2cm 0;">
+        <div style="font-size: 10pt; letter-spacing: 0.5em; color: var(--gold); margin-bottom: 20px;">STRICTLY
+            CONFIDENTIAL</div>
+        <h1 style="border: none; padding: 0; font-family: 'Playfair Display', serif; font-size: 32pt;">Valuation
+            Methodology & Analysis</h1>
+        <div style="font-size: 18pt; margin: 20px 0;">{{ deal.target_company }}</div>
+        <div style="font-size: 10pt; color: var(--slate); margin-top: 2cm;">{{ generated_date }}</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <section>
+        <h1>Executive Summary</h1>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="card-label">Enterprise Value</div>
+                <div class="card-value">${{ "{:,.0f}".format(dcf.enterprise_value|default(0)) }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">Equity Value</div>
+                <div class="card-value">${{ "{:,.0f}".format(dcf.equity_value|default(0)) }}</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">EV / Revenue</div>
+                <div class="card-value">{{ dcf.ev_to_revenue|default('4.2') }}x</div>
+            </div>
+            <div class="summary-card">
+                <div class="card-label">EV / EBITDA</div>
+                <div class="card-value">{{ dcf.ev_to_ebitda|default('11.5') }}x</div>
+            </div>
+        </div>
+        <div class="methodology-box">
+            Our valuation utilizes a two-stage Discounted Cash Flow (DCF) model. Stage 1 projects explicit free cash
+            flows over a {{ dcf.assumptions.projection_years|default(5) }}-year period. Stage 2 calculates terminal
+            value using the perpetuity growth method.
+        </div>
+    </section>
+
+    <section>
+        <h2>Key Assumptions</h2>
+        <table style="width: 60%; margin: 20px 0;">
+            <tr>
+                <td>Cost of Capital (WACC)</td>
+                <td class="num">{{ "%.1f"|format((dcf.assumptions.wacc|default(0.12)) * 100) }}%</td>
+            </tr>
+            <tr>
+                <td>Terminal Growth Rate</td>
+                <td class="num">{{ "%.1f"|format((dcf.assumptions.terminal_growth_rate|default(0.03)) * 100) }}%</td>
+            </tr>
+            <tr>
+                <td>Assumed Tax Rate</td>
+                <td class="num">{{ "%.1f"|format((dcf.assumptions.tax_rate|default(0.25)) * 100) }}%</td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>Explicit Forecast Period</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric ($000s)</th>
+                    {% for year in dcf.projected_years %}
+                    <th class="num">Year {{ year.year }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Total Revenue</td>
+                    {% for year in dcf.projected_years %}
+                    <td class="num">{{ "{:,.0f}".format(year.revenue|default(0)) }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td>EBITDA</td>
+                    {% for year in dcf.projected_years %}
+                    <td class="num">{{ "{:,.0f}".format(year.ebitda|default(0)) }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="total-row">
+                    <td>Unlevered Free Cash Flow</td>
+                    {% for year in dcf.projected_years %}
+                    <td class="num">{{ "{:,.0f}".format(year.fcf|default(0)) }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td>Discount Factor</td>
+                    {% for year in dcf.projected_years %}
+                    <td class="num">{{ "%.3f"|format(year.discount_factor|default(0)) }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="total-row" style="background: #e2e8f0;">
+                    <td>Present Value of FCF</td>
+                    {% for year in dcf.projected_years %}
+                    <td class="num">{{ "{:,.0f}".format(year.pv_fcf|default(0)) }}</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Valuation Bridge</h2>
+        <table style="width: 70%;">
+            <tr class="bridge-row">
+                <td>Cumulative PV of Stage 1 Cash Flows</td>
+                <td class="num">${{ "{:,.0f}".format(dcf.sum_pv_fcf|default(0)) }}</td>
+            </tr>
+            <tr class="bridge-row">
+                <td>PV of Terminal Value (Stage 2)</td>
+                <td class="num">${{ "{:,.0f}".format(dcf.pv_terminal_value|default(0)) }}</td>
+            </tr>
+            <tr class="bridge-row final">
+                <td>Total Enterprise Value</td>
+                <td class="num">${{ "{:,.0f}".format(dcf.enterprise_value|default(0)) }}</td>
+            </tr>
+            <tr class="bridge-row">
+                <td>(+) Cash and Equivalents</td>
+                <td class="num">$0</td>
+            </tr>
+            <tr class="bridge-row">
+                <td>(-) Total Debt</td>
+                <td class="num">$0</td>
+            </tr>
+            <tr class="bridge-row final" style="border-top-color: var(--gold);">
+                <td>Implied Equity Value</td>
+                <td class="num" style="color: var(--gold);">${{ "{:,.0f}".format(dcf.equity_value|default(0)) }}</td>
+            </tr>
+        </table>
+    </section>
+
+</body>
+
+</html>

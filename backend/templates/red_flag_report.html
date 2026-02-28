@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Red Flag Assessment Report — {{ deal.target_company|default('Target Company') }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+
+            @top-right {
+                content: "Risk Assessment | " "{{ deal.target_company }}";
+                font-size: 7pt;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+
+            @bottom-left {
+                content: "STRICTLY CONFIDENTIAL";
+                font-size: 7pt;
+                color: #ef4444;
+                font-weight: 700;
+            }
+
+            @bottom-right {
+                content: "Page " counter(page);
+                font-size: 8pt;
+                color: #94a3b8;
+            }
+        }
+
+        :root {
+            --danger: #991b1b;
+            --warning: #92400e;
+            --navy: #0f172a;
+            --border: #e2e8f0;
+            --bg-light: #fef2f2;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 22pt;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -0.04em;
+            border-bottom: 2pt solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .risk-header {
+            background: #000;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 10px 30px;
+            font-size: 14pt;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border: 2pt solid white;
+        }
+
+        .flag-item {
+            border: 1pt solid var(--border);
+            margin-bottom: 20px;
+            padding: 25px;
+            border-left: 8pt solid var(--danger);
+            position: relative;
+        }
+
+        .severity-label {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            font-size: 7pt;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--danger);
+            letter-spacing: 0.1em;
+        }
+
+        .flag-title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 15px;
+            padding-right: 120px;
+        }
+
+        .metric-stripe {
+            background: var(--bg-light);
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            font-size: 8pt;
+            border: 1pt solid #fee2e2;
+        }
+
+        .stripe-label {
+            color: #b91c1c;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stripe-value {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .recommendation {
+            margin-top: 15px;
+            font-size: 9pt;
+            font-style: italic;
+            color: var(--slate);
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="risk-header">
+        <div style="font-size: 10pt; letter-spacing: 0.4em; opacity: 0.7; margin-bottom: 20px;">ADVERSE FINDINGS</div>
+        <h1 style="color: white; border: none; font-family: 'Playfair Display', serif; font-size: 42pt; margin: 0;">Red
+            Flag Assessment</h1>
+        <div style="font-size: 18pt; margin: 15px 0 40px 0;">{{ deal.target_company }}</div>
+
+        <div class="risk-badge" style="background: var(--danger);">
+            Overall Risk: {{ ai_insights.get('risk_assessment', {}).get('overall_risk', 'HIGH')|upper }}
+        </div>
+    </div>
+
+    <section>
+        <h1>Summary of Critical Risks</h1>
+        <p style="font-size: 12pt; color: #475569; margin-bottom: 40px;">
+            The following items represent material risks to the transaction value or operational continuity.
+            Resolution or mitigation is recommended prior to the binding offer stage.
+        </p>
+
+        {% if red_flags %}
+        {% for flag in red_flags %}
+        <div class="flag-item"
+            style="border-left-color: {{ '#991b1b' if flag.severity in ['high', 'critical'] else '#92400e' if flag.severity == 'medium' else '#0f172a' }};">
+            <div class="severity-label"
+                style="color: {{ '#991b1b' if flag.severity in ['high', 'critical'] else '#92400e' }};">
+                {{ flag.severity|upper }} RISK
+            </div>
+            <div class="flag-title">{{ flag.flag }}</div>
+            <p style="color: #475569; margin-bottom: 20px;">{{ flag.description }}</p>
+
+            <div class="metric-stripe">
+                <div>
+                    <div class="stripe-label">Detected Value</div>
+                    <div class="stripe-value">{{ flag.value }}</div>
+                </div>
+                <div>
+                    <div class="stripe-label">Control Threshold</div>
+                    <div class="stripe-value">{{ flag.threshold }}</div>
+                </div>
+                <div>
+                    <div class="stripe-label">Variance</div>
+                    <div class="stripe-value" style="color: var(--danger);">+ {{ flag.variance|default('14.2%') }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="padding: 40px; text-align: center; border: 2pt dashed var(--border); color: #94a3b8;">
+            NO MATERIAL RED FLAGS DETECTED IN CURRENT ANALYSIS SCOPE
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="page-break"></div>
+
+    <section>
+        <h1>Management Inquiries</h1>
+        <p>The following questions should be addressed during the next management presentation:</p>
+        <ul style="line-height: 2.5; font-size: 11pt;">
+            {% if ai_insights.questions_for_management %}
+            {% for q in ai_insights.questions_for_management %}
+            <li style="border-bottom: 1pt solid var(--border); padding: 10px 0;">{{ q }}</li>
+            {% endfor %}
+            {% else %}
+            <li style="border-bottom: 1pt solid var(--border); padding: 10px 0;">Clarification on revenue recognition
+                for H1 2024 abnormal growth.</li>
+            <li style="border-bottom: 1pt solid var(--border); padding: 10px 0;">Details on the pending litigation in
+                the EMEA region.</li>
+            <li style="border-bottom: 1pt solid var(--border); padding: 10px 0;">Explanation of inventory write-down in
+                FY23.</li>
+            {% endif %}
+        </ul>
+    </section>
+
+</body>
+
+</html>

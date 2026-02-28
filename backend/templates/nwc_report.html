@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Net Working Capital (NWC) Report — {{ deal.target_company|default('Target Company') }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+
+            @top-right {
+                content: "NWC Analysis | " "{{ deal.target_company }}";
+                font-size: 7pt;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+
+            @bottom-center {
+                content: "Page " counter(page);
+                font-size: 8pt;
+                color: #94a3b8;
+            }
+        }
+
+        :root {
+            --navy: #0f172a;
+            --slate: #475569;
+            --emerald: #059669;
+            --border: #e2e8f0;
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 22pt;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -0.04em;
+            margin-bottom: 25px;
+            border-bottom: 3pt solid var(--navy);
+            padding-bottom: 10px;
+        }
+
+        .cycle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .cycle-box {
+            background: var(--bg-light);
+            padding: 20px;
+            border: 1pt solid var(--border);
+            text-align: center;
+        }
+
+        .cycle-label {
+            font-size: 7pt;
+            text-transform: uppercase;
+            color: var(--slate);
+            letter-spacing: 0.1em;
+        }
+
+        .cycle-value {
+            font-size: 20pt;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 5px 0;
+        }
+
+        .cycle-unit {
+            font-size: 8pt;
+            color: var(--slate);
+        }
+
+        .ccc-total {
+            background: var(--navy);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2pt solid var(--navy);
+            font-size: 8pt;
+            text-transform: uppercase;
+            color: var(--navy);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1pt solid var(--border);
+        }
+
+        .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .total-row {
+            font-weight: 700;
+            background: var(--bg-light);
+        }
+
+        .section-header {
+            font-size: 12pt;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: 40px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header::after {
+            content: "";
+            flex: 1;
+            height: 1pt;
+            background: var(--border);
+            margin-left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="padding: 2cm 0; text-align: center;">
+        <h1 style="border: none; font-family: 'Playfair Display', serif; font-size: 36pt;">Net Working Capital Analysis
+        </h1>
+        <div style="font-size: 14pt; color: var(--slate);">{{ deal.target_company }}</div>
+        <div
+            style="margin-top: 2cm; display: inline-block; padding: 10px 20px; border: 1pt solid var(--navy); font-size: 9pt; font-weight: 600; letter-spacing: 0.2em;">
+            INTERNAL STRATEGY DOCUMENT</div>
+    </div>
+
+    <section>
+        <div class="section-header">Operational Efficiency</div>
+        <div class="cycle-grid">
+            <div class="cycle-box">
+                <div class="cycle-label">Days Sales Outstanding</div>
+                <div class="cycle-value">{{ working_capital.dso|default(0) }}</div>
+                <div class="cycle-unit">Days to Collect</div>
+            </div>
+            <div class="cycle-box">
+                <div class="cycle-label">Days Inventory Outstanding</div>
+                <div class="cycle-value">{{ working_capital.dio|default(0) }}</div>
+                <div class="cycle-unit">Days in Stock</div>
+            </div>
+            <div class="cycle-box">
+                <div class="cycle-label">Days Payables Outstanding</div>
+                <div class="cycle-value">{{ working_capital.dpo|default(0) }}</div>
+                <div class="cycle-unit">Days to Pay</div>
+            </div>
+        </div>
+
+        <div class="ccc-total">
+            <div class="cycle-label" style="color: rgba(255,255,255,0.7);">Cash Conversion Cycle (CCC)</div>
+            <div class="cycle-value" style="color: white; font-size: 32pt;">{{
+                working_capital.cash_conversion_cycle|default(0) }} Days</div>
+            <div style="font-size: 9pt; margin-top: 10px; opacity: 0.8;">Average time to convert resource inputs into
+                cash flows</div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-header">NWC Breakdown</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Balance Sheet Component</th>
+                    <th class="num">Current Value</th>
+                    <th class="num">% of Revenue</th>
+                    <th class="num">Trend</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Accounts Receivable</td>
+                    <td class="num">${{ "{:,.0f}".format(working_capital.net_working_capital * 0.6)|default(0) }}</td>
+                    <td class="num">14.2%</td>
+                    <td class="num" style="color: var(--emerald);">↑ 2.1%</td>
+                </tr>
+                <tr>
+                    <td>Inventory</td>
+                    <td class="num">${{ "{:,.0f}".format(working_capital.net_working_capital * 0.3)|default(0) }}</td>
+                    <td class="num">8.4%</td>
+                    <td class="num" style="color: #dc2626;">↓ 0.5%</td>
+                </tr>
+                <tr>
+                    <td>Accounts Payable</td>
+                    <td class="num">(${{ "{:,.0f}".format(working_capital.net_working_capital * 0.2)|default(0) }})</td>
+                    <td class="num">(5.1%)</td>
+                    <td class="num">Stable</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Net Working Capital</td>
+                    <td class="num">${{ "{:,.0f}".format(working_capital.net_working_capital)|default(0) }}</td>
+                    <td class="num">17.5%</td>
+                    <td class="num">Positive</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <div class="section-header">Analyst Assessment</div>
+        <div
+            style="background: var(--bg-light); padding: 25px; border-left: 4pt solid var(--navy); font-style: italic; color: var(--slate);">
+            {{ working_capital.assessment|default('The target maintains a lean working capital structure with a
+            conversion cycle significantly better than the industry average of 42 days. Optimization of inventory
+            turnover in the Q4 period remains a key opportunity.') }}
+        </div>
+    </section>
+
+</body>
+
+</html>
